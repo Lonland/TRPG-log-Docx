@@ -37,9 +37,11 @@
 
 # 多人秘密团
 > 需要工具新增excel  
-> 标出**存档点**的部分是提醒你备份存档，避免有什么问题导致一切从头开始，熟练后可以不备份
+> 标出**存档点**的部分是提醒你备份存档，避免有什么问题导致一切从头开始，熟练后可以不备份   
 1. log染色界面
    1. 将所有log的pc颜色调整好（这个补救代码没写好，如果pc颜色没调好无法补救）
+      > 没想好颜色可以把所有人颜色设置的不统一（请确保没设置错误），后期替换来进行修改
+      > 但是如果pc之间颜色混了的话表格的根据名字替换颜色我没写代码。。。   
    2. 开关需关闭时间显示过滤和年月日不显示，其他打开，下载word文件
 2. 将所有下载的word复制到同一个文件中，复制前记得标注一下这是那个群
    > 推荐使用2025HOx这种正常log中不会出现的标记，方便分段的时候靠ctrl+F搜索  
@@ -52,7 +54,7 @@
 6. 在第一列填充你希望的小群排序顺序
    1. 推荐大群0，小群按照ho几就填几，多人小群就有几个人填几位
       > 防止有人不知道，excel只需要你填两个，然后选中格子下拉就可以自动填充同样的数字
-   2. 给小群上底色，推荐是pc颜色亮度调为240（如果不喜欢底色，以后会补加框教程）
+   2. 给小群上底色，推荐是pc颜色亮度调为240（如果不喜欢底色，以后会补加框教程）   
 **存档点**
 7. 选择A-D四列，进行按照B列排序
 8. 检索全文，出现比较明显的同时开多个小群的rp（主要表现形式是一整块都是有混乱底色），选择那一区块进行优先A列排序
@@ -70,5 +72,48 @@
 ## 信息框
 ## 名字+下划线式log
 ## 上面那个升级版之带头像log
-## 名字染色错误补救
+## 名字染色错误补救（可以在手动输入npc名字后进行大面积npcrp颜色染色）
+如果名字颜色没有混可以使用高级替换-格式-字体-颜色替换   
+rp出现混色（比如多人rp是统一颜色），通过以下代码补救   
+用于格式是<名字> [tab] rp，如果不是该格式请自行微调代码   
+```
+Sub HighlightSpecificNameWithTab()
+    Dim rng As Range
+    Dim findText As String
+    Dim highlightColor As Long
+
+    ' **设定要查找的名字（包含尖括号）**
+    findText = "<名字>^t"
+    
+    ' **设定高亮颜色（RGB 颜色值）**
+    highlightColor = RGB(0, 0, 0) ' 例如：#FFFFFF 的 RGB(255, 255, 255)
+
+    ' **移动到文档开头**
+    Selection.HomeKey Unit:=wdStory
+
+    ' **查找匹配的 "<名字>"**
+    With Selection.Find
+        .Text = findText
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = False
+        .MatchCase = True ' **区分大小写**
+        .MatchWholeWord = False ' **允许部分匹配**
+    End With
+
+    ' **遍历全文，查找并染色**
+    Do While Selection.Find.Execute
+        ' **扩展范围至整行，包括“内容”**
+        Set rng = Selection.Range
+        rng.MoveEnd Unit:=wdParagraph, Count:=1 ' **扩展至换行符**
+        
+        ' **应用颜色**
+        rng.Font.Color = highlightColor
+    Loop
+
+    MsgBox "所有 '" & findText & "' 相关行已染色！", vbInformation
+End Sub
+
+```
 
