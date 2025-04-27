@@ -67,14 +67,89 @@
 
 # 神秘小巧思&小技巧
 ## 底页插入
+1. 双击页眉处出现页眉编辑（也可以插入-页眉进入）  
+2. 复制图片，调整图片格式为在文字下方，调整图片大小覆盖整个页面
 ## 目录
+1. 用自带的标题一标题二插入标题   
+> 一般我喜欢标题一设置段前分页
+2. 在开头插入word自动目录  
+3. 需要调整页码：   
+   3.1 选中要设定为页码1的页数：布局-分隔符下一页    
+   3.2 插入-页码-设置页码格式-页码编号-起始页码   
 ## 样式
+设置样式用于替换，比如设置一个样式固定段落边框颜色-快速替换正文中的小窗部分
 ## 信息框
 ## 名字+下划线式log
-## 上面那个升级版之带头像log
+设置名字样式：加上下划线，将所有名字替换成名字样式   
+## 带头像log
+先保存文件（方便之后图片插入位置不理想，调试代码时候不保存直接退出）
+关闭自动保存！！！
+第一张图片生成位置有问题很正常，代码运行结束手动调整一下
+使用以下VB代码插入图片
+```
+Sub InsertImageBeforeEachNamedParagraph()
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    Dim para As Paragraph
+    Dim shape As shape
+    Dim nameMap As Object ' Dictionary
+    Dim key As Variant
+    Dim imgPath As String
+    Dim paraText As String
+    Dim paraIndex As Long: paraIndex = 0
+
+    ' ? 创建名字与图片路径的映射表
+    Set nameMap = CreateObject("Scripting.Dictionary")
+    nameMap.Add "<名字1>", "D:\Users\...\1.jpg"
+    nameMap.Add "<名字2>", "D:\Users\...\2.jpg"
+    ' ?? 替换路径为你实际使用的图片路径
+    startIndex = Selection.Paragraphs(1).Range.Start
+    ' ? 遍历文档每一段
+    For Each para In ActiveDocument.Paragraphs
+    If para.Range.Start < startIndex Then GoTo ContinueLoop
+        If Left(Trim(para.Range.Text), 1) <> "<" Then GoTo ContinueLoop
+        paraIndex = paraIndex + 1
+        ' ? 每处理一百段进行询问，如果不需要询问可以删除这个If，也可以看看效果
+        If paraIndex Mod 100 = 0 Then
+            If MsgBox("已处理 " & paraIndex & " 段，是否继续？", vbYesNo) = vbNo Then Exit Sub
+        End If
+        paraText = Trim(para.Range.Text)
+
+        ' 遍历名字列表，逐个匹配
+        For Each key In nameMap.Keys
+            If paraText Like key & vbCr & "*" Then
+                ' ? 插入对应图片
+                Set shape = ActiveDocument.Shapes.AddPicture( _
+                    FileName:=nameMap(key), _
+                    LinkToFile:=False, _
+                    SaveWithDocument:=True, _
+                    Anchor:=para.Range)
+
+                With shape
+                    .LockAspectRatio = msoTrue
+                    .Width = 40 ' 约等于 8 个汉字宽
+                    
+                    .WrapFormat.Type = wdWrapTight
+                    .RelativeHorizontalPosition = wdRelativeHorizontalPositionPage
+                    .Left = InchesToPoints(0.5) ' 位于段落缩进区域
+
+                    .RelativeVerticalPosition = wdRelativeVerticalPositionParagraph
+                    .Top = 0 ' 补偿段前间距
+                End With
+
+                Exit For ' 匹配后退出内层循环
+            End If
+        Next key
+ContinueLoop:
+    Next para
+
+    MsgBox "已为每个名字段落插入对应图片。", vbInformation
+End Sub
+```
 ## 名字染色错误补救（可以在手动输入npc名字后进行大面积npcrp颜色染色）
-如果名字颜色没有混可以使用高级替换-格式-字体-颜色替换   
-rp出现混色（比如多人rp是统一颜色），通过以下代码补救   
+* 如果名字颜色没有混   
+> 可以使用高级替换-格式-字体-颜色替换   
+* rp出现混色（比如多人rp是统一颜色），通过以下代码补救   
 用于格式是<名字> [tab] rp，如果不是该格式请自行微调代码   
 ```
 Sub HighlightSpecificNameWithTab()
