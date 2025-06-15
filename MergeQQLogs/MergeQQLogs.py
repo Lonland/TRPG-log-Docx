@@ -38,7 +38,7 @@ class Step1(tk.Frame):
             return
         
         self.controller.all_messages = reQQLogs.all_file_parse(self.controller.selected_files)
-        self.controller.name_list = unique_names = list({msg["name"] for msg in all_messages})
+        self.controller.name_list = unique_names = list({msg["name"] for msg in self.controller.all_messages})
         print(self.controller.name_list)
 
         step2_frame = Step2(self.master, self.controller)
